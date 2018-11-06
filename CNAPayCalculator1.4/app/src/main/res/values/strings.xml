@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">CNA Pay Calculator</string>
+    <string name="title_activity_pay_period">PayPeriodActivity</string>
+    <string name="title_activity_main2">CNA Pay Calculator</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="tab_text_1">Hours Calculator</string>
+    <string name="tab_text_2">Pay Period Tracker</string>
+</resources>
