@@ -1,18 +1,15 @@
 package com.example.kyle.cnapaycalculator;
 
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,24 +19,23 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 
 public class PayPeriodActivity extends Fragment {
 
     int year, month, day;
     static DayTrackerListAdapter adapter;
+    static ArrayAdapter<String> periodAdapter;
     static ArrayAdapter<String> dateAdapter;
     static ArrayList<DayTracker> dayTrackers;
     static ArrayList<String> date;
+    static ArrayList<String> periods;
     Intent intent;
     TextView payPeriodStartDate, payPeriodRange;
     DatePickerDialog.OnDateSetListener dateSetListener;
@@ -47,6 +43,7 @@ public class PayPeriodActivity extends Fragment {
     CalculatePay pay;
     TextView GrossPayTV, NetPayTV, PayDateTV;
     ListView listView;
+    Spinner spinner2;
     SharedPreferences sharedPreferences;
 
     @Override
@@ -56,9 +53,9 @@ public class PayPeriodActivity extends Fragment {
 
         listView = rootView.findViewById(R.id.listView);
         payPeriodStartDate = rootView.findViewById(R.id.payPeriodStartDate);
-        payPeriodRange = rootView.findViewById(R.id.payPeriodRange);
         NetPayTV = rootView.findViewById(R.id.NetPayTV);
         PayDateTV = rootView.findViewById(R.id.PayDateTV);
+        spinner2 = rootView.findViewById(R.id.spinner2);
         setHasOptionsMenu(true);
 
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
@@ -74,11 +71,15 @@ public class PayPeriodActivity extends Fragment {
         //Add the objects to an ArrayList
         dayTrackers = new ArrayList<>();
         date = new ArrayList<>();
+        periods = new ArrayList<>();
 
         adapter = new DayTrackerListAdapter(getActivity(), R.layout.adapter_view_layout, dayTrackers);
         listView.setAdapter(adapter);
 
         dateAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, date);
+        periodAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, periods);
+
+        spinner2.setAdapter(periodAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -153,17 +154,59 @@ public class PayPeriodActivity extends Fragment {
                 String payDate = (payDayCal.get(Calendar.MONTH) + 1) + "/" + payDayCal.get(Calendar.DAY_OF_MONTH) + "/" + payDayCal.get(Calendar.YEAR);
 
                 payPeriodStartDate.setText(startDate);
-                payPeriodRange.setText(startDate + " - " + endDate);
                 PayDateTV.setText(payDate + ":");
 
+
                 dateAdapter.clear();
+                periodAdapter.clear();
                 setDateArray(startCal);
+                setYearPeriods(y, m, d);
             }
         };
+
+        //set on click listener for dropdown, get index then search db for index numbers and display to the listview
 
 
 
         return rootView;
+    }
+
+    public void setYearPeriods(int y, int m, int d)
+    {
+        Calendar startCalNew = new GregorianCalendar();
+        startCalNew.set(Calendar.DAY_OF_MONTH, d);
+        startCalNew.set(Calendar.MONTH, m);
+        startCalNew.set(Calendar.YEAR, y);
+        String start = (startCalNew.get(Calendar.MONTH) + 1) + "/" + startCalNew.get(Calendar.DAY_OF_MONTH) + "/" + startCalNew.get(Calendar.YEAR);
+
+        Calendar endCalNew = new GregorianCalendar();
+        endCalNew.set(Calendar.DAY_OF_MONTH, d + 13);
+        endCalNew.set(Calendar.MONTH, m);
+        endCalNew.set(Calendar.YEAR, y);
+        String end = (endCalNew.get(Calendar.MONTH) + 1) + "/" + endCalNew.get(Calendar.DAY_OF_MONTH) + "/" + endCalNew.get(Calendar.YEAR);
+
+        periods.add(start + " - " + end);
+
+        int num = 14;
+
+        for (int i = 0; i < 25; i++)
+        {
+            startCalNew.set(Calendar.DAY_OF_MONTH, d + num);
+            startCalNew.set(Calendar.MONTH, m);
+            startCalNew.set(Calendar.YEAR, y);
+            start = (startCalNew.get(Calendar.MONTH) + 1) + "/" + startCalNew.get(Calendar.DAY_OF_MONTH) + "/" + startCalNew.get(Calendar.YEAR);
+
+            endCalNew.set(Calendar.DAY_OF_MONTH, d + num + 13);
+            endCalNew.set(Calendar.MONTH, m);
+            endCalNew.set(Calendar.YEAR, y);
+            end = (endCalNew.get(Calendar.MONTH) + 1) + "/" + endCalNew.get(Calendar.DAY_OF_MONTH) + "/" + endCalNew.get(Calendar.YEAR);
+
+            periods.add(start + " - " + end);
+
+            num += 14;
+        }
+
+        periodAdapter.notifyDataSetChanged();
     }
 
     @Override
